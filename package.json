@@ -1,0 +1,20 @@
+{
+  "name": "dns-updater",
+  "version": "1.0.0",
+  "description": "",
+  "exports": "./src/index.js",
+  "type": "module",
+  "node": "^12.20.0 || ^14.13.1 || >=16.0.0",
+  "scripts": {
+    "start": "node src/index.js",
+    "debug": "node --inspect-brk src/index.js",
+    "test": "node src/utils.test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "array-shuffle": "^3.0.0",
+    "dotenv": "^16.0.0",
+    "phin": "^3.6.1"
+  }
+}

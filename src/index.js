@@ -1,47 +1,53 @@
 import 'dotenv/config';
-import { getPublicIPAddress, getZoneDNSRecords, updateDNSRecord } from './utils.js';
+import { getPublicIPAddress } from './utils.js';
+import { CloudFlareLoadBalancerPool } from './cloudFlarelLoadBalancerPool.js';
 
-// comma seperated list example.com,bike.staging.techlabor.org,
-const domainString = process.env.DOMAINS;
-const zoneId = process.env.CLOUDFLARE_ZONE_ID;
+const originName = process.env.ORIGIN_NAME;
+const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
+const dryRun = (process.env.DRY_RUN === 'true');
 
-if (!domainString) {
-  throw new Error('Env var DOMAINS not set.');
+if (!originName) {
+  throw new Error('Env var ORIGIN_NAME not set.');
 }
 
-if (!zoneId) {
-  throw new Error('Env var CLOUDFLARE_ZONE_ID not set.');
+if (!bearerToken) {
+  throw new Error('Env var CLOUDFLARE_BEARER_TOKEN not set.');
 }
 
-// list of domains that need to be associated
-const domains = domainString.split(',').map(s => s.trim()).filter(s => s.length !== 0);
+if (dryRun) {
+  console.debug("Dry run mode.");
+}
+
+const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
 
 const publicIPAddress = await getPublicIPAddress();
 
-const dnsRecords = await getZoneDNSRecords(zoneId);
-const updates = domains.reduce((updatePromises, domainName) => {
-  const dnsRecord = dnsRecords.find(r => r.name === domainName);
+const pools = await cloudFlareLoadBalancerPool.listPools();
 
-  if (dnsRecord) {
-    console.log(dnsRecord.id, domainName, publicIPAddress);
+// remove pools that
+const outdatedPools = pools.filter(pool => pool.origins.some(origin => origin.address !== publicIPAddress));
 
-    // updatePromises.push(
-    //   updateDNSRecord(dnsRecord.id, {
-    //     type: 'A',
-    //     name: domainName,
-    //     content: publicIPAddress,
-    //     ttl: 3600,
-    //     proxied: false
-    //   })
-    // );
+// exit is nothing needs to happen
+if (outdatedPools.length === 0) {
+  console.debug(`No change to IP address.`);
+  return;
+}
+
+const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
+  if (dryRun) {
+    console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
+  } else {
+    return updatePoolOrigin(pool, originName, publicIPAddress);
   }
+}));
 
-  return updatePromises;
-}, []);
+const failedUpdates = updatedOriginPools.filter(result => result.status === 'rejected');
 
-const allUpdates = await Promise.allSettled(updates);
+if (failedUpdates.length > 0) {
+  failedUpdates.each(failure => {
+    console.error(`Failed to update CloudFlare origin pool: ${failure.reason}`);
+  });
+  throw new Error('Failed to update CloudFlare origin pool.');
+}
 
-allUpdates.forEach(update => {
-  const logger = update.status === "fulfilled" ? console.info : console.error;
-  logger(`Update to ${update.value.body.result.zone_name}: ${update.status}`);
-});
+console.log("Success updating CloudFlare pool origin IP addresses.");

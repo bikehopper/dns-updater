@@ -46,6 +46,9 @@ export default class CloudFlareLoadBalancerPool {
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
       data: {
         name: pool.name,
+        check_regions: ['WNAM'],
+        latitude: 37.7749,
+        longitude: 122.4194,
         origins: pool.origins.map(org => {
           if (org.name === originName) {
             org.address = originAddress

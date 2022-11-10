@@ -31,7 +31,7 @@ const outdatedPools = pools.filter(pool => pool.origins.some(origin => origin.ad
 
 // exit is nothing needs to happen
 if (outdatedPools.length === 0) {
-  console.debug(`No change to IP address.`);
+  console.log(`No change to IP address.`);
   process.exit(0);
 }
 
@@ -39,7 +39,7 @@ const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
   if (dryRun) {
     console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
   } else {
-    // return updatePoolOrigin(pool, originName, publicIPAddress);
+    return updatePoolOrigin(pool, originName, publicIPAddress);
   }
 }));
 

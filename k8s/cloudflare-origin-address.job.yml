@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: update-cloudflare-origin-address
-              image: ghcr.io/bikehopper/dns-updater@sha256:31a1aea3defdd7ccd52dfa1d578d9155fe9a5fbde2cd07881663cae552f59a9e
+              image: ghcr.io/bikehopper/dns-updater@sha256:10cab034d687038b9cd46eea05c6ef64ebc55275a4eeebf530bf757f1ee51dfb
               resources:
                 requests:
                   memory: "100Mi"
@@ -23,7 +23,7 @@ spec:
                 - name: ORIGIN_NAME
                   value: "us-west-1a"
                 - name: DRY_RUN
-                  value: "true"
+                  value: "false"
                 - name: CLOUDFLARE_BEARER_TOKEN
                   valueFrom:
                     secretKeyRef:

@@ -30,3 +30,9 @@ export async function getPublicIPAddress() {
     throw new Error('Failed to get public IP address.');
   }
 }
+
+export function convertLabelStringsToObj(labelStrings) {
+  // ['topology.kubernetes.io/zone']
+  console.log(labelStrings);
+  return labelStrings;
+}

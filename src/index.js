@@ -1,10 +1,10 @@
 import * as dotenv from 'dotenv';
-import { getPublicIPAddress } from './utils.js';
+import { getPublicIPAddress, convertLabelStringsToObj } from './utils.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 
-dotenv.config()
+dotenv.config();
 
-const originName = process.env.ORIGIN_NAME;
+const originName = convertLabelStringsToObj(process.env.POD_LABELS)['topology.kubernetes.io/zone'];
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
 const dryRun = (process.env.DRY_RUN === 'true');
 

@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { getPublicIPAddress } from './utils.js';
-import { CloudFlareLoadBalancerPool } from './cloudFlarelLoadBalancerPool.js';
+import CloudFlareLoadBalancerPool from './cloudFlarelLoadBalancerPool.js';
 
 const originName = process.env.ORIGIN_NAME;
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;

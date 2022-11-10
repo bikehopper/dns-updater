@@ -49,6 +49,7 @@ export default class CloudFlareLoadBalancerPool {
         check_regions: ['WNAM'],
         latitude: 37.7749,
         longitude: 122.4194,
+        monitor: '66f2ebed851135c41641b72327577a71',
         origins: pool.origins.map(org => {
           if (org.name === originName) {
             org.address = originAddress

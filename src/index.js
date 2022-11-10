@@ -4,7 +4,7 @@ import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 
 dotenv.config();
 console.log(process.env.LABELS_FILE_PATH)
-const labels = convertLabelStringsToObj(process.env.LABELS_FILE_PATH);
+const labels = await convertLabelStringsToObj(process.env.LABELS_FILE_PATH);
 console.log(labels);
 const originName = labels['topology.kubernetes.io/zone'];
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;

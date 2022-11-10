@@ -1,5 +1,6 @@
 import p from 'phin';
 import arrayShuffle from 'array-shuffle';
+import { open } from 'node:fs/promises';
 
 // GET req to these domains just returns your IP
 const ipRetrievingSites = arrayShuffle([
@@ -31,8 +32,14 @@ export async function getPublicIPAddress() {
   }
 }
 
-export function convertLabelStringsToObj(labelStrings) {
-  // ['topology.kubernetes.io/zone']
-  console.log(labelStrings);
-  return labelStrings;
+export async function convertLabelStringsToObj(labelsPath) {
+  const file = await open(labelsPath);
+  const labels = {};
+
+  for await (const line of file.readLines()) {
+    const [key, value] = line.split('=');
+    labels[key] = value;
+  }
+
+  return labels;
 }

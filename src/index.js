@@ -4,7 +4,7 @@ import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 
 dotenv.config();
 
-const originName = process.send.ORIGIN_NAME;
+const originName = process.env.ORIGIN_NAME;
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
 const dryRun = (process.env.DRY_RUN === 'true');
 

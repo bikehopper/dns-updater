@@ -46,8 +46,8 @@ const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
 const failedUpdates = updatedOriginPools.filter(result => result.status === 'rejected');
 
 if (failedUpdates.length > 0) {
-  failedUpdates.each(failure => {
-    console.error(`Failed to update CloudFlare origin pool: ${failure.reason}`);
+  failedUpdates.forEach(failure => {
+    console.log(`Failed to update CloudFlare origin pool: ${failure.reason}`);
   });
   throw new Error('Failed to update CloudFlare origin pool.');
 }

@@ -39,7 +39,7 @@ const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
   if (dryRun) {
     console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
   } else {
-    return updatePoolOrigin(pool, originName, publicIPAddress);
+    return cloudFlareLoadBalancerPool.updatePoolOrigin(pool, originName, publicIPAddress);
   }
 }));
 

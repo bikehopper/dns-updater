@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
             - name: update-cloudflare-origin-address
-              image: ghcr.io/bikehopper/dns-updater@sha256:d9a7eaf3666422354a5f41198790a44242e904d1b7c1249971537bc8c5e71edd
+              image: ghcr.io/bikehopper/dns-updater@sha256:d80d13315b5515e2a9e047f4022baed3b06412825b02326d9fcb4a4fd31b63a1
               resources:
                 requests:
                   memory: "100Mi"

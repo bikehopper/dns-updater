@@ -44,12 +44,14 @@ export default class CloudFlareLoadBalancerPool {
     const { body } = await this.client({
       method: 'PUT',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
-      data: pool.origins.map(org => {
-        if (org.name === originName) {
-          org.address = originAddress
-        }
-        return org;
-      })
+      data: {
+        origins: pool.origins.map(org => {
+          if (org.name === originName) {
+            org.address = originAddress
+          }
+          return org;
+        })
+      }
     });
 
     if (body.success) {

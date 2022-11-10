@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: update-cloudflare-origin-address
+spec:
+  schedule: "* * * * *" # run every minute
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        spec:
+          containers:
+          - name: update-cloudflare-origin-address
+            image: ghcr.io/bikehopper/dns-updater@sha:REPLACE_ME
+            resources:
+              requests:
+                memory: "100Mi"
+                cpu: "50m"
+            env:
+            - name: ORIGIN_NAME
+              valueFrom:
+                fieldRef:
+                fieldPath: metadata.labels['topology.kubernetes.io/zone']
+            - name: DRY_RUN
+              value: true
+            - name: CLOUDFLARE_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-pool-edit-token
+                  key: bearer
+          imagePullSecrets:
+          - name: dockerconfigjson-github-com
+          restartPolicy: Never

@@ -14,17 +14,14 @@ spec:
         spec:
           containers:
             - name: update-cloudflare-origin-address
-              image: ghcr.io/bikehopper/dns-updater@sha256:cb68bd2e3b2b0f549b97aec2013e826ba4fd15be9829c807f5a394146fc6f1cf
+              image: ghcr.io/bikehopper/dns-updater@sha256:e7cda586f6d27cd1fcee9b04a90b007842045467afa49cec19ddb069da065c78
               resources:
                 requests:
                   memory: "100Mi"
                   cpu: "50m"
-              volumeMounts:
-                - name: podinfo
-                  mountPath: /etc/podinfo
               env:
-                - name: LABELS_FILE_PATH
-                  value: "/etc/podinfo/labels"
+                - name: ORIGIN_NAME
+                  value: "us-west-1a"
                 - name: DRY_RUN
                   value: "true"
                 - name: CLOUDFLARE_BEARER_TOKEN
@@ -32,13 +29,6 @@ spec:
                     secretKeyRef:
                       name: cloudflare-pool-edit-token
                       key: bearer
-          volumes:
-            - name: podinfo
-              downwardAPI:
-                items:
-                  - path: "labels"
-                    fieldRef:
-                      fieldPath: metadata.labels
           imagePullSecrets:
             - name: dockerconfigjson-github-com
           restartPolicy: Never

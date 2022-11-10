@@ -2,12 +2,11 @@ import p from 'phin';
 
 export default class CloudFlareLoadBalancerPool {
   constructor(bearerToken) {
-    if (bearerToken) {
+    if (!bearerToken) {
       throw new Error("CloudFlareLoadBalancerPool requires: bearerToken");
     }
     this.client = p.defaults({
       parse: 'json',
-      hostname: 'https://api.cloudflare.com',
       core: {
         headers: {
           'Authorization': `Bearer ${bearerToken}`,
@@ -20,7 +19,7 @@ export default class CloudFlareLoadBalancerPool {
   async getZoneDNSRecords(zoneId) {
     const { body } = await this.client({
       method: 'GET',
-      path: `/client/v4/zones/${zoneId}/dns_records`
+      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`
     });
 
     if (body.success) {
@@ -44,7 +43,7 @@ export default class CloudFlareLoadBalancerPool {
 
     const { body } = await this.client({
       method: 'PUT',
-      url: `/client/v4/user/load_balancers/pools/${pool.id}`,
+      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
       data: pool.origins.map(org => {
         if (org.name === originName) {
           org.address = originAddress
@@ -66,7 +65,7 @@ export default class CloudFlareLoadBalancerPool {
 
     const { body } = await this.client({
       method: 'GET',
-      url: `/client/v4/user/load_balancers/pools/${poolId}`,
+      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${poolId}`,
     });
 
     if (body.success) {
@@ -78,7 +77,7 @@ export default class CloudFlareLoadBalancerPool {
   async listPools () {
     const { body } = await this.client({
       method: 'GET',
-      url: `/client/v4/user/load_balancers/pools`,
+      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools`,
     });
 
     if (body.success) {

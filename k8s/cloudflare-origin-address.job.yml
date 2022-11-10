@@ -9,12 +9,12 @@ spec:
   concurrencyPolicy: Replace
   jobTemplate:
     spec:
-      backoffLimit: 3
+      backoffLimit: 0
       template:
         spec:
           containers:
           - name: update-cloudflare-origin-address
-            image: ghcr.io/bikehopper/dns-updater@sha256:b96531652e594484a044b5270d8b0cda36f190d7893ab6af1d8165fc1c6f05ff
+            image: ghcr.io/bikehopper/dns-updater@sha256:c93eda321e35363408b682f736f0fc652fcd41d64ce276a09f53e073003effd9
             resources:
               requests:
                 memory: "100Mi"

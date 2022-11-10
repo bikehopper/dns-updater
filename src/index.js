@@ -1,6 +1,8 @@
-import 'dotenv/config';
+import * as dotenv from 'dotenv';
 import { getPublicIPAddress } from './utils.js';
-import CloudFlareLoadBalancerPool from './cloudFlarelLoadBalancerPool.js';
+import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
+
+dotenv.config()
 
 const originName = process.env.ORIGIN_NAME;
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
@@ -14,7 +16,7 @@ if (!bearerToken) {
   throw new Error('Env var CLOUDFLARE_BEARER_TOKEN not set.');
 }
 
-if (dryRun) {
+if (dryRun === true) {
   console.debug("Dry run mode.");
 }
 
@@ -37,7 +39,7 @@ const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
   if (dryRun) {
     console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
   } else {
-    return updatePoolOrigin(pool, originName, publicIPAddress);
+    // return updatePoolOrigin(pool, originName, publicIPAddress);
   }
 }));
 
@@ -50,4 +52,4 @@ if (failedUpdates.length > 0) {
   throw new Error('Failed to update CloudFlare origin pool.');
 }
 
-console.log("Success updating CloudFlare pool origin IP addresses.");
+console.log(`Successful run of CloudFlare pool origin IP address updater.`);

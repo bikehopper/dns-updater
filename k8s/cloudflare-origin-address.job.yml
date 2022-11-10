@@ -14,7 +14,7 @@ spec:
         spec:
           containers:
           - name: update-cloudflare-origin-address
-            image: ghcr.io/bikehopper/dns-updater@sha:REPLACE_ME
+            image: ghcr.io/bikehopper/dns-updater@sha256:9dc923eca984a636f0e56d107a29800a1d8007540350501a1e1bd263366007c1
             resources:
               requests:
                 memory: "100Mi"
@@ -23,9 +23,9 @@ spec:
             - name: ORIGIN_NAME
               valueFrom:
                 fieldRef:
-                fieldPath: metadata.labels['topology.kubernetes.io/zone']
+                  fieldPath: metadata.labels['topology.kubernetes.io/zone']
             - name: DRY_RUN
-              value: true
+              value: 'true'
             - name: CLOUDFLARE_BEARER_TOKEN
               valueFrom:
                 secretKeyRef:

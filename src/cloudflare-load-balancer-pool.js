@@ -45,6 +45,7 @@ export default class CloudFlareLoadBalancerPool {
       method: 'PUT',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
       data: {
+        name: pool.name,
         origins: pool.origins.map(org => {
           if (org.name === originName) {
             org.address = originAddress

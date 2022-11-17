@@ -1,34 +1,35 @@
-apiVersion: batch/v1
-kind: CronJob
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: update-cloudflare-origin-address
+  labels:
+    app: update-cloudflare-origin-address
 spec:
-  schedule: "* * * * *" # run every minute
-  successfulJobsHistoryLimit: 1
-  failedJobsHistoryLimit: 1
-  concurrencyPolicy: Replace
-  jobTemplate:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: update-cloudflare-origin-address
+  template:
+    metadata:
+      labels:
+        app: update-cloudflare-origin-address
     spec:
-      backoffLimit: 0
-      template:
-        spec:
-          containers:
-            - name: update-cloudflare-origin-address
-              image: ghcr.io/bikehopper/dns-updater@sha256:bf2d94633b836139410c8e5f988429f85d46e05462acee6a8bc99fcabdffca5d
-              resources:
-                requests:
-                  memory: "100Mi"
-                  cpu: "50m"
-              env:
-                - name: ORIGIN_NAME
-                  value: "us-west-1a"
-                - name: DRY_RUN
-                  value: "false"
-                - name: CLOUDFLARE_BEARER_TOKEN
-                  valueFrom:
-                    secretKeyRef:
-                      name: cloudflare-pool-edit-token
-                      key: bearer
-          imagePullSecrets:
-            - name: dockerconfigjson-github-com
-          restartPolicy: Never
+      containers:
+        - name: update-cloudflare-origin-address
+          image: ghcr.io/bikehopper/dns-updater@sha256:bf2d94633b836139410c8e5f988429f85d46e05462acee6a8bc99fcabdffca5d
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "50m"
+          env:
+            - name: ORIGIN_NAME
+              value: "us-west-1a"
+            - name: DRY_RUN
+              value: "false"
+            - name: CLOUDFLARE_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-pool-edit-token
+                  key: bearer
+      imagePullSecrets:
+        - name: dockerconfigjson-github-com

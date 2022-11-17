@@ -1,55 +1,30 @@
-import * as dotenv from 'dotenv';
-import { getPublicIPAddress, convertLabelStringsToObj } from './utils.js';
-import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
+import cron from 'node-cron';
+import { updateLoadBalancerOrigins } from './cloudflare.js';
 
-dotenv.config();
+// The signals we want to handle
+// NOTE: although it is tempting, the SIGKILL signal (9) cannot be intercepted and handled
+const signals = {
+  'SIGHUP': 1,
+  'SIGINT': 2,
+  'SIGTERM': 15
+};
 
-const originName = process.env.ORIGIN_NAME;
-const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
-const dryRun = (process.env.DRY_RUN === 'true');
+const cache = {
+  lastIPAddress: null
+};
 
-if (!originName) {
-  throw new Error('Env var ORIGIN_NAME not set.');
-}
+const task = cron.schedule('* * * * *', () => updateLoadBalancerOrigins(cache));
 
-if (!bearerToken) {
-  throw new Error('Env var CLOUDFLARE_BEARER_TOKEN not set.');
-}
+const shutdown = (signal, value) => {
+  console.log("shutdown!");
+  task.stop();
+  process.exit(128 + value);
+};
 
-if (dryRun === true) {
-  console.debug("Dry run mode.");
-}
-
-const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
-
-const publicIPAddress = await getPublicIPAddress();
-
-const pools = await cloudFlareLoadBalancerPool.listPools();
-
-// remove pools that
-const outdatedPools = pools.filter(pool => pool.origins.some(origin => origin.address !== publicIPAddress));
-
-// exit is nothing needs to happen
-if (outdatedPools.length === 0) {
-  console.log(`No change to IP address.`);
-  process.exit(0);
-}
-
-const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
-  if (dryRun) {
-    console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
-  } else {
-    return cloudFlareLoadBalancerPool.updatePoolOrigin(pool, originName, publicIPAddress);
-  }
-}));
-
-const failedUpdates = updatedOriginPools.filter(result => result.status === 'rejected');
-
-if (failedUpdates.length > 0) {
-  failedUpdates.forEach(failure => {
-    console.log(`Failed to update CloudFlare origin pool: ${failure.reason}`);
+// Create a listener for each of the signals that we want to handle
+Object.keys(signals).forEach((signal) => {
+  process.on(signal, () => {
+    console.log(`process received a ${signal} signal`);
+    shutdown(signal, signals[signal]);
   });
-  throw new Error('Failed to update CloudFlare origin pool.');
-}
-
-console.log(`Successful run of CloudFlare pool origin IP address updater.`);
+});

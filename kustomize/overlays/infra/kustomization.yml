@@ -1,0 +1,5 @@
+resources:
+  - ../../base
+namespace: infra
+patchesStrategicMerge:
+  - deployment.yml

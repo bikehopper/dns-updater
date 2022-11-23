@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: update-cloudflare-origin-address
-          image: ghcr.io/bikehopper/dns-updater@v1.0.1
+          image: ghcr.io/bikehopper/dns-updater:v1.0.1

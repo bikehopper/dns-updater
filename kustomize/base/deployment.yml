@@ -18,8 +18,8 @@ spec:
         - name: update-cloudflare-origin-address
           resources:
             requests:
-              memory: "100Mi"
-              cpu: "50m"
+              memory: "40Mi"
+              cpu: "20m"
           env:
             - name: ORIGIN_NAME
               value: "us-west-1a"

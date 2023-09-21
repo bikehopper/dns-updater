@@ -1,3 +1,4 @@
+import { test, expect } from 'vitest';
 import { getPublicIPAddress } from './utils.js';
 
 test('#getPublicIPAddress', async () => {

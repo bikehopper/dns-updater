@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node -r dotenv/config src/index.js",
     "debug": "node -r dotenv/config --inspect-brk src/index.js",
-    "test": "node -r dotenv/config --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node -r dotenv/config ./node_modules/.bin/vitest",
+    "coverage": "vitest run --coverage"
   },
   "author": "Andy McCoy",
   "license": "ISC",
@@ -18,7 +19,8 @@
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.22.15",
+    "@vitest/coverage-v8": "^0.34.4",
     "dotenv": "^16.3.1",
-    "jest": "^29.7.0"
+    "vitest": "^0.34.4"
   }
 }

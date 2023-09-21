@@ -21,7 +21,7 @@ export default class CloudFlareLoadBalancerPool {
       method: 'GET',
       url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=A`
     });
-
+    console.log(body);
     if (body.success) {
       return body.result;
     }

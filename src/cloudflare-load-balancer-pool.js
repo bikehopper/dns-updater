@@ -16,10 +16,10 @@ export default class CloudFlareLoadBalancerPool {
     })
   }
 
-  async getZoneDNSRecords(zoneId) {
+  async getZoneDNSARecords(zoneId) {
     const { body } = await this.client({
       method: 'GET',
-      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`
+      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=A`
     });
 
     if (body.success) {
@@ -85,6 +85,19 @@ export default class CloudFlareLoadBalancerPool {
     const { body } = await this.client({
       method: 'GET',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools`,
+    });
+
+    if (body.success) {
+      return body.result;
+    }
+    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
+  }
+
+  async patchDnsRecord(zoneId, recordId, data) {
+    const { body } = await this.client({
+      method: 'PATCH',
+      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`,
+      data
     });
 
     if (body.success) {

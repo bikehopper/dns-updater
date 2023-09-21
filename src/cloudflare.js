@@ -1,13 +1,12 @@
-import * as dotenv from 'dotenv';
 import { getPublicIPAddress } from './utils.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
-
-dotenv.config();
 
 const originName = process.env.ORIGIN_NAME;
 const bearerToken = process.env.CLOUDFLARE_BEARER_TOKEN;
 const dryRun = (process.env.DRY_RUN === 'true');
 const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
+const cloudFlareZoneId = process.env.CLOUDFLARE_ZONE_ID;
+const domains = process.env.DOMAINS.split(',').filter(s => s.length);
 
 export async function updateLoadBalancerOrigins(cache) {
   if (!originName) {
@@ -25,7 +24,7 @@ export async function updateLoadBalancerOrigins(cache) {
   const publicIPAddress = await getPublicIPAddress();
 
   // exit is nothing needs to happen
-  if (cache.lastIPAddress === publicIPAddress) {
+  if (cache.lastIPAddressOrigin === publicIPAddress) {
     console.log('No change to IP address.');
     return;
   }
@@ -52,11 +51,49 @@ export async function updateLoadBalancerOrigins(cache) {
   }
 
   // update IP cache so we dont try to update thigns again.
-  cache.lastIPAddress = publicIPAddress;
+  cache.lastIPAddressOrigin = publicIPAddress;
 
   console.log(`Successful run of CloudFlare pool origin IP address updater.`);
 }
 
-// export async function dnsARecrods(cache) {
+export async function updateDnsRecords(cache) {
+  const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
+  const publicIPAddress = await getPublicIPAddress();
 
-// }
+  if (!cloudFlareZoneId) {
+    throw new Error('Env var CLOUDFLARE_ZONE_ID not set.');
+  }
+
+  if (domains.length === 0) {
+    console.warn(Error('Env var DOMAINS not set.'));
+  }
+
+  if (dryRun === true) {
+    console.debug('<-------- Dry run mode -------->');
+  }
+
+  // exit is nothing needs to happen
+  if (cache.lastIPAddressDns === publicIPAddress) {
+    console.log('No change to IP address.');
+    return;
+  }
+
+  await Promise.all(zoneDnsRecords
+    .filter(record => domains.includes(record.name))
+    .map(record => {
+      if (dryRun) {
+        console.log(`would patch id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
+      } else {
+        console.log(`patching id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
+        return cloudFlareLoadBalancerPool.patchDnsRecord(cloudFlareZoneId, record.id, {
+          content: publicIPAddress
+        });
+      }
+    })
+  );
+
+  // update IP cache so we dont try to update thigns again.
+  cache.lastIPAddressDns = publicIPAddress;
+
+  console.log(`Successful run of CloudFlare DNS A record updater.`);
+}

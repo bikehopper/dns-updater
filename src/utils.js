@@ -3,16 +3,19 @@ import arrayShuffle from 'array-shuffle';
 import { open } from 'node:fs/promises';
 
 // GET req to these domains just returns your IP
-const ipRetrievingSites = arrayShuffle([
-  'https://icanhazip.com',
-  'https://ifconfig.me',
-  'https://api.ipify.org',
-  'https://ipinfo.io/ip',
-  'https://ipecho.net/plain',
-  'https://domains.google.com/checkip',
-]);
+const getIpRetrievingSites = () => {
+  return arrayShuffle([
+    'https://icanhazip.com',
+    'https://ifconfig.me',
+    'https://api.ipify.org',
+    'https://ipinfo.io/ip',
+    'https://ipecho.net/plain',
+    'https://domains.google.com/checkip',
+  ]);
+};
 
 export async function getPublicIPAddress() {
+  const ipRetrievingSites = getIpRetrievingSites();
   const errors = [];
   for (let i = 0; i < ipRetrievingSites.length; i++) {
     try {

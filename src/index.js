@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { updateLoadBalancerOrigins } from './cloudflare.js';
+import { updateLoadBalancerOrigins, updateDnsRecords } from './cloudflare.js';
 
 // The signals we want to handle
 // NOTE: although it is tempting, the SIGKILL signal (9) cannot be intercepted and handled
@@ -10,10 +10,14 @@ const signals = {
 };
 
 const cache = {
-  lastIPAddress: null
+  lastIPAddressOrigin: null,
+  lastIPAddressDns: null,
 };
 
-const task = cron.schedule('* * * * *', () => updateLoadBalancerOrigins(cache));
+const task = cron.schedule('* * * * *', () => {
+  updateLoadBalancerOrigins(cache);
+  updateDnsRecords(cache);
+});
 
 const shutdown = (signal, value) => {
   console.log("shutdown!");

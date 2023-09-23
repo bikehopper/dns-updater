@@ -23,12 +23,13 @@ jobs:
     - uses: actions/setup-node@v3
       with:
         node-version: '20'
-        cache: 'npm-test'
+        cache: 'npm'
     - run: npm install
     - run: npm run test:unit
 
-
   build-and-push-image:
+    needs:
+      - test
     runs-on: ${{ matrix.platform == 'linux/arm64' && 'arm64' || 'ubuntu-latest' }}
     strategy:
       matrix:

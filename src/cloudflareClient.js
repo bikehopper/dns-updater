@@ -1,6 +1,6 @@
 import p from 'phin';
 
-export class CloudflareClient {
+export default class CloudflareClient {
   #bearerToken;
   #client;
   #defaultOptions = {

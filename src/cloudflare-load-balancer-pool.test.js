@@ -4,23 +4,15 @@ import p from 'phin';
 
 vi.mock('phin');
 
-describe('#getZoneDNSARecords', () => {
+describe('#getZoneDNSARecords success', () => {
   let cloudFlareLoadBalancerPool;
 
   beforeEach(() => {
-    p.defaults.mockReturnValueOnce(async function () {
+    p.defaults.mockReturnValue(async function () {
       return {
         body: {
           success: true,
           result: ['result']
-        }
-      }
-    })
-    .mockReturnValueOnce(async function () {
-      return {
-        body: {
-          success: false,
-          errors: [{code: 401, message: 'unauthorized'}]
         }
       }
     });
@@ -40,6 +32,31 @@ describe('#getZoneDNSARecords', () => {
     const zoneId = 'zone1';
     const result = await cloudFlareLoadBalancerPool.getZoneDNSARecords(zoneId);
     expect(result).toEqual(['result']);
+  });
+});
+
+describe('#getZoneDNSARecords failure', () => {
+  let cloudFlareLoadBalancerPool;
+
+  beforeEach(() => {
+    p.defaults.mockReturnValue(async function () {
+      return {
+        body: {
+          success: false,
+          errors: [{code: 401, message: 'unauthorized'}]
+        }
+      }
+    });
+
+    cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool('FAKE_BEARER_TOKEN');
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
   });
 
   test('should throw an error if requst fails', async () => {
@@ -158,23 +175,15 @@ describe('#updatePoolOrigin failed API call', () => {
   });
 });
 
-describe('#poolDetails', () => {
+describe('#poolDetails success', () => {
   let cloudFlareLoadBalancerPool;
 
   beforeEach(() => {
-    p.defaults.mockReturnValueOnce(async function () {
+    p.defaults.mockReturnValue(async function () {
       return {
         body: {
           success: true,
           result: ['result']
-        }
-      }
-    })
-    .mockReturnValueOnce(async function () {
-      return {
-        body: {
-          success: false,
-          errors: [{code: 401, message: 'unauthorized'}]
         }
       }
     });
@@ -196,29 +205,16 @@ describe('#poolDetails', () => {
     expect(result).toEqual(['result']);
   });
 
-  test('should throw an error if requst fails', async () => {
-    const poolId = 'pool1';
-    await expect(cloudFlareLoadBalancerPool.poolDetails(poolId)).rejects.toThrow('401:unauthorized')
-  });
-
   test('should throw an error if poolId isnt set', async () => {
     await expect(cloudFlareLoadBalancerPool.poolDetails()).rejects.toThrow('poolDetails requires an poolId');
   });
 });
 
-describe('#listPools', () => {
+describe('#poolDetails failure', () => {
   let cloudFlareLoadBalancerPool;
 
   beforeEach(() => {
-    p.defaults.mockReturnValueOnce(async function () {
-      return {
-        body: {
-          success: true,
-          result: ['result']
-        }
-      }
-    })
-    .mockReturnValueOnce(async function () {
+    p.defaults.mockReturnValue(async function () {
       return {
         body: {
           success: false,
@@ -238,9 +234,64 @@ describe('#listPools', () => {
     vi.resetAllMocks();
   });
 
+  test('should throw an error if requst fails', async () => {
+    const poolId = 'pool1';
+    await expect(cloudFlareLoadBalancerPool.poolDetails(poolId)).rejects.toThrow('401:unauthorized')
+  });
+});
+
+describe('#listPools success', () => {
+  let cloudFlareLoadBalancerPool;
+
+  beforeEach(() => {
+    p.defaults.mockReturnValue(async function () {
+      return {
+        body: {
+          success: true,
+          result: ['result']
+        }
+      }
+    });
+
+    cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool('FAKE_BEARER_TOKEN');
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
+  });
+
   test('should return results array', async () => {
     const result = await cloudFlareLoadBalancerPool.listPools();
     expect(result).toEqual(['result']);
+  });
+});
+
+describe('#listPools failure', () => {
+  let cloudFlareLoadBalancerPool;
+
+  beforeEach(() => {
+    p.defaults.mockReturnValue(async function () {
+      return {
+        body: {
+          success: false,
+          errors: [{code: 401, message: 'unauthorized'}]
+        }
+      }
+    });
+
+    cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool('FAKE_BEARER_TOKEN');
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
   });
 
   test('should throw an error if requst fails', async () => {
@@ -288,7 +339,7 @@ describe('#patchDnsRecord faiure', () => {
   let cloudFlareLoadBalancerPool;
 
   beforeEach(() => {
-    p.defaults.mockReturnValueOnce(async function () {
+    p.defaults.mockReturnValue(async function () {
       return {
         body: {
           success: false,

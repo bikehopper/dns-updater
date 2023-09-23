@@ -1,5 +1,5 @@
 import { describe, beforeEach, afterEach, test, expect, vi, afterAll } from 'vitest';
-import { CloudflareClient } from './cloudflareClient';
+import CloudflareClient from './cloudflareClient';
 import p from 'phin';
 
 vi.mock('phin');

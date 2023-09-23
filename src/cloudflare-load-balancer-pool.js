@@ -1,31 +1,18 @@
-import p from 'phin';
+import CloudflareClient from './cloudflareClient';
 
 export default class CloudFlareLoadBalancerPool {
   constructor(bearerToken) {
     if (!bearerToken) {
       throw new Error("CloudFlareLoadBalancerPool requires: bearerToken");
     }
-    this.client = p.defaults({
-      parse: 'json',
-      core: {
-        headers: {
-          'Authorization': `Bearer ${bearerToken}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    })
+    this.client = new CloudflareClient(bearerToken);
   }
 
   async getZoneDNSARecords(zoneId) {
-    const { body } = await this.client({
+    return this.client.request({
       method: 'GET',
       url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=A`
     });
-
-    if (body.success) {
-      return body.result;
-    }
-    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
   }
 
   async updatePoolOrigin (pool, originName, originAddress) {
@@ -41,7 +28,7 @@ export default class CloudFlareLoadBalancerPool {
       throw new Error("updatePoolOrigin requires an originAddress");
     }
 
-    const { body } = await this.client({
+    return this.client.request({
       method: 'PUT',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
       data: {
@@ -58,11 +45,6 @@ export default class CloudFlareLoadBalancerPool {
         })
       }
     });
-
-    if (body.success) {
-      return body.result;
-    }
-    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
   }
 
   async poolDetails(poolId) {
@@ -70,39 +52,24 @@ export default class CloudFlareLoadBalancerPool {
       throw new Error("poolDetails requires an poolId");
     }
 
-    const { body } = await this.client({
+    return this.client.request({
       method: 'GET',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${poolId}`,
     });
-
-    if (body.success) {
-      return body.result;
-    }
-    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
   }
 
   async listPools () {
-    const { body } = await this.client({
+    return this.client.request({
       method: 'GET',
       url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools`,
     });
-
-    if (body.success) {
-      return body.result;
-    }
-    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
   }
 
   async patchDnsRecord(zoneId, recordId, data) {
-    const { body } = await this.client({
+    return this.client.request({
       method: 'PATCH',
       url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`,
       data
     });
-
-    if (body.success) {
-      return body.result;
-    }
-    throw new Error(`${body.errors[0].code}:${body.errors[0].message}`);
   }
 }

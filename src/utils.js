@@ -1,6 +1,5 @@
 import p from 'phin';
 import arrayShuffle from 'array-shuffle';
-import { open } from 'node:fs/promises';
 
 // GET req to these domains just returns your IP
 const getIpRetrievingSites = () => {
@@ -33,16 +32,4 @@ export async function getPublicIPAddress() {
     });
     throw new Error('Failed to get public IP address.');
   }
-}
-
-export async function convertLabelStringsToObj(labelsPath) {
-  const file = await open(labelsPath);
-  const labels = {};
-
-  for await (const line of file.readLines()) {
-    const [key, value] = line.split('=');
-    labels[key] = value;
-  }
-
-  return labels;
 }

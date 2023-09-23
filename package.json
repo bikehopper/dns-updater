@@ -8,6 +8,7 @@
     "start": "node -r dotenv/config src/index.js",
     "debug": "node -r dotenv/config --inspect-brk src/index.js",
     "test": "node -r dotenv/config ./node_modules/.bin/vitest",
+    "test:debug": "node -r dotenv/config ./node_modules/.bin/vitest --inspect-brk --single-thread",
     "coverage": "vitest run --coverage"
   },
   "author": "Andy McCoy",

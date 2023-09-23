@@ -67,7 +67,7 @@ export default class CloudFlareLoadBalancerPool {
 
   async poolDetails(poolId) {
     if (!poolId) {
-      throw new Error("getPool requires an poolId");
+      throw new Error("poolDetails requires an poolId");
     }
 
     const { body } = await this.client({

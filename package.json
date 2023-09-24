@@ -8,7 +8,7 @@
     "start": "node -r dotenv/config src/index.js",
     "debug": "node -r dotenv/config --inspect-brk src/index.js",
     "test": "node -r dotenv/config ./node_modules/.bin/vitest",
-    "test:unit": "node -r dotenv/config ./node_modules/.bin/vitest run",
+    "test:unit": "DOTENV_CONFIG_PATH=./.env.test node -r dotenv/config ./node_modules/.bin/vitest run",
     "test:debug": "node -r dotenv/config ./node_modules/.bin/vitest --inspect-brk --single-thread",
     "coverage": "node -r dotenv/config ./node_modules/.bin/vitest run --coverage"
   },

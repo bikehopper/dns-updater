@@ -10,7 +10,7 @@
     "test": "node -r dotenv/config ./node_modules/.bin/vitest",
     "test:unit": "node -r dotenv/config ./node_modules/.bin/vitest run",
     "test:debug": "node -r dotenv/config ./node_modules/.bin/vitest --inspect-brk --single-thread",
-    "coverage": "vitest run --coverage"
+    "coverage": "node -r dotenv/config ./node_modules/.bin/vitest run --coverage"
   },
   "author": "Andy McCoy",
   "license": "ISC",

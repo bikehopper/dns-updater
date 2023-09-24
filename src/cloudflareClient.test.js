@@ -37,7 +37,7 @@ describe('CloudflareClient successful request', () => {
   test('should make a GET request to the test path', () => {
     expect(reqSpy).toBeCalledWith({
       method: 'GET',
-      path: '/api/test/path'
+      url: 'https://api.cloudflare.com/api/test/path'
     });
   });
 

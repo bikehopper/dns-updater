@@ -57,7 +57,6 @@ export async function updateLoadBalancerOrigins(cache) {
 }
 
 export async function updateDnsRecords(cache) {
-  const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
   const publicIPAddress = await getPublicIPAddress();
 
   if (!cloudFlareZoneId) {
@@ -77,6 +76,8 @@ export async function updateDnsRecords(cache) {
     console.log('No change to IP address.');
     return;
   }
+
+  const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
 
   await Promise.all(zoneDnsRecords
     .filter(record => domains.includes(record.name))

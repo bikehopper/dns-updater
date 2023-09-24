@@ -11,7 +11,7 @@ export default class CloudFlareLoadBalancerPool {
   async getZoneDNSARecords(zoneId) {
     return this.client.request({
       method: 'GET',
-      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=A`
+      url: `/client/v4/zones/${zoneId}/dns_records?type=A`
     });
   }
 
@@ -30,7 +30,7 @@ export default class CloudFlareLoadBalancerPool {
 
     return this.client.request({
       method: 'PUT',
-      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${pool.id}`,
+      url: `/client/v4/user/load_balancers/pools/${pool.id}`,
       data: {
         name: pool.name,
         check_regions: ['WNAM'],
@@ -54,21 +54,21 @@ export default class CloudFlareLoadBalancerPool {
 
     return this.client.request({
       method: 'GET',
-      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${poolId}`,
+      url: `/client/v4/user/load_balancers/pools/${poolId}`,
     });
   }
 
   async listPools () {
     return this.client.request({
       method: 'GET',
-      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools`,
+      url: `/client/v4/user/load_balancers/pools`,
     });
   }
 
   async patchDnsRecord(zoneId, recordId, data) {
     return this.client.request({
       method: 'PATCH',
-      url: `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records/${recordId}`,
+      url: `/client/v4/zones/${zoneId}/dns_records/${recordId}`,
       data
     });
   }

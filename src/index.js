@@ -12,11 +12,21 @@ const signals = {
 const cache = {
   lastIPAddressOrigin: null,
   lastIPAddressDns: null,
+  lastIPAddress: null,
 };
 
-const task = cron.schedule('* * * * *', () => {
-  updateLoadBalancerOrigins(cache);
-  updateDnsRecords(cache);
+const task = cron.schedule('* * * * *', async () => {
+  const publicIPAddress = await getPublicIPAddress();
+
+  if(cache.lastIPAddress === publicIPAddress) {
+    console.log('No change to IP address.');
+    return;
+  }
+  await Promise.all([
+    updateLoadBalancerOrigins(publicIPAddress),
+    updateDnsRecords(publicIPAddress)
+  ]);
+  cache.lastIPAddress = publicIPAddress;
 });
 
 const shutdown = (signal, value) => {

@@ -10,8 +10,7 @@ import {
 
 const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
 
-export async function updateLoadBalancerOrigins(cache) {
-  // debugger
+export async function updateLoadBalancerOrigins(publicIPAddress) {
   if (!originName || originName.length === 0) {
     throw new Error('Env var ORIGIN_NAME not set.');
   }
@@ -22,14 +21,6 @@ export async function updateLoadBalancerOrigins(cache) {
 
   if (dryRun === true) {
     console.debug('<-------- Dry run mode -------->');
-  }
-
-  const publicIPAddress = await getPublicIPAddress();
-
-  // exit is nothing needs to happen
-  if (cache.lastIPAddressOrigin === publicIPAddress) {
-    console.log('No change to IP address.');
-    return;
   }
 
   const pools = await cloudFlareLoadBalancerPool.listPools();
@@ -45,9 +36,6 @@ export async function updateLoadBalancerOrigins(cache) {
     }
   }));
 
-  // update IP cache so we dont try to update the pool origin again.
-  cache.lastIPAddressOrigin = publicIPAddress;
-
   const failedUpdates = updatedOriginPools.filter(result => result.status === 'rejected');
 
   if (failedUpdates.length > 0) {
@@ -60,9 +48,7 @@ export async function updateLoadBalancerOrigins(cache) {
   console.log(`Successful run of CloudFlare pool origin IP address updater.`);
 }
 
-export async function updateDnsRecords(cache) {
-  const publicIPAddress = await getPublicIPAddress();
-
+export async function updateDnsRecords(publicIPAddress) {
   if (!cloudFlareZoneId) {
     throw new Error('Env var CLOUDFLARE_ZONE_ID not set.');
   }
@@ -73,12 +59,6 @@ export async function updateDnsRecords(cache) {
 
   if (dryRun === true) {
     console.debug('<-------- Dry run mode -------->');
-  }
-
-  // exit is nothing needs to happen
-  if (cache.lastIPAddressDns === publicIPAddress) {
-    console.log('No change to IP address.');
-    return;
   }
 
   const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
@@ -96,9 +76,6 @@ export async function updateDnsRecords(cache) {
       }
     })
   );
-
-  // update IP cache so we dont try to update thigns again.
-  cache.lastIPAddressDns = publicIPAddress;
 
   console.log(`Successful run of CloudFlare DNS A record updater.`);
 }

@@ -1,7 +1,6 @@
 import { describe, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import { updateLoadBalancerOrigins } from './cloudflare.js';
 import * as exports from './config.js';
-import { getPublicIPAddress } from './utils.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 
 vi.mock('./config.js');
@@ -98,21 +97,6 @@ describe('updateLoadBalancerOrigins dry run mode', () => {
   });
 });
 
-describe('updateLoadBalancerOrigins cache', () => {
-  beforeEach(() => {
-    getPublicIPAddress.mockResolvedValue('1.1.1.1');
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-    vi.resetAllMocks();
-  });
-
-  test('should exit if IP hasnt changed', async () => {
-    await expect(updateLoadBalancerOrigins({lastIPAddressOrigin: '1.1.1.1'})).resolves.toBe(undefined);
-  });
-});
-
 describe('updateLoadBalancerOrigins IP changed', () => {
   describe('dry run', () => {
     const mockOriginName = 'mock-origin-name';
@@ -137,7 +121,6 @@ describe('updateLoadBalancerOrigins IP changed', () => {
 
     beforeEach(() => {
       vi.stubGlobal('console', consoleMock);
-      getPublicIPAddress.mockResolvedValue(mockIP);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
     });
@@ -147,7 +130,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
 
     test('should call log for each update', async () => {
       client.listPools.mockResolvedValue(mockListPoolsResp);
-      await updateLoadBalancerOrigins({});
+      await updateLoadBalancerOrigins(mockIP);
 
       expect(consoleMock.log).toHaveBeenCalledWith(`would update: pool: ${mockListPoolsResp[0].id}, ${mockOriginName}, ${mockIP}`);
       expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater.`);
@@ -178,7 +161,6 @@ describe('updateLoadBalancerOrigins IP changed', () => {
 
     beforeEach(() => {
       vi.stubGlobal('console', consoleMock);
-      getPublicIPAddress.mockResolvedValue(mockIP);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(false);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
@@ -191,7 +173,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       client.listPools.mockResolvedValue(mockListPoolsResp);
       client.updatePoolOrigin.mockRejectedValue(mockUpdatePoolError);
 
-      await updateLoadBalancerOrigins({});
+      await updateLoadBalancerOrigins(mockIP);
 
       expect(client.updatePoolOrigin).toHaveBeenCalledWith(mockListPoolsResp[0], mockOriginName, mockIP)
       expect(consoleMock.error).toHaveBeenCalledWith(`Failed to update CloudFlare origin pool: ${mockUpdatePoolError}`);
@@ -221,7 +203,6 @@ describe('updateLoadBalancerOrigins IP changed', () => {
 
     beforeEach(() => {
       vi.stubGlobal('console', consoleMock);
-      getPublicIPAddress.mockResolvedValue(mockIP);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(false);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
@@ -234,7 +215,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       client.listPools.mockResolvedValue(mockListPoolsResp);
       client.updatePoolOrigin.mockResolvedValue({});
 
-      await updateLoadBalancerOrigins({});
+      await updateLoadBalancerOrigins(mockIP);
 
       expect(client.updatePoolOrigin).toHaveBeenCalledWith(mockListPoolsResp[0], mockOriginName, mockIP)
       expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater.`);

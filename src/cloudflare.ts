@@ -1,4 +1,3 @@
-import { getPublicIPAddress } from './utils.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 import {
   bearerToken,
@@ -10,7 +9,7 @@ import {
 
 const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
 
-export async function updateLoadBalancerOrigins(publicIPAddress) {
+export async function updateLoadBalancerOrigins(publicIPAddress:string) {
   if (!originName || originName.length === 0) {
     throw new Error('Env var ORIGIN_NAME not set.');
   }
@@ -53,7 +52,7 @@ export async function updateDnsRecords(publicIPAddress) {
     throw new Error('Env var CLOUDFLARE_ZONE_ID not set.');
   }
 
-  if (domains.length === 0) {
+  if (domains || domains.length === 0) {
     console.warn(Error('Env var DOMAINS not set.'));
   }
 
@@ -64,7 +63,7 @@ export async function updateDnsRecords(publicIPAddress) {
   const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
 
   await Promise.all(zoneDnsRecords
-    .filter(record => domains.includes(record.name))
+    .filter(record => domains.split(',').filter(s => s.length).includes(record.name))
     .map(record => {
       if (dryRun) {
         console.log(`would patch id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);

@@ -1,21 +1,38 @@
-import CloudflareClient from './cloudflareClient';
+import CloudflareClient from './cloudflareClient.js';
+import {CloudflareResult, Pool} from './cloudflare-load-balancer-pool.types.js';
 
-export default class CloudFlareLoadBalancerPool {
-  constructor(bearerToken) {
+interface CloudFlareLoadBalancerPoolInterface {
+  client: CloudflareClient;
+  getZoneDNSARecords: Function;
+  updatePoolOrigin: Function;
+  poolDetails: Function;
+  listPools: Function;
+  patchDnsRecord: Function;
+}
+
+type CloudflareAPIError = {
+  code: number,
+  message: string
+}
+
+export default class CloudFlareLoadBalancerPool implements CloudFlareLoadBalancerPoolInterface {
+  public client: CloudflareClient;
+
+  constructor(bearerToken:string|undefined) {
     if (!bearerToken) {
       throw new Error("CloudFlareLoadBalancerPool requires: bearerToken");
     }
     this.client = new CloudflareClient(bearerToken);
   }
 
-  async getZoneDNSARecords(zoneId) {
+  async getZoneDNSARecords(zoneId:string):Promise<CloudflareResult> {
     return this.client.request({
       method: 'GET',
       url: `/client/v4/zones/${zoneId}/dns_records?type=A`
     });
   }
 
-  async updatePoolOrigin (pool, originName, originAddress) {
+  async updatePoolOrigin (pool:Pool, originName:string, originAddress:string):Promise<CloudflareResult[]> {
     if (!pool) {
       throw new Error("updatePoolOrigin requires an pool");
     }
@@ -47,7 +64,7 @@ export default class CloudFlareLoadBalancerPool {
     });
   }
 
-  async poolDetails(poolId) {
+  async poolDetails(poolId:string): Promise<CloudflareResult> {
     if (!poolId) {
       throw new Error("poolDetails requires an poolId");
     }
@@ -58,18 +75,18 @@ export default class CloudFlareLoadBalancerPool {
     });
   }
 
-  async listPools () {
+  async listPools(): Promise<CloudflareResult> {
     return this.client.request({
       method: 'GET',
       url: `/client/v4/user/load_balancers/pools`,
     });
   }
 
-  async patchDnsRecord(zoneId, recordId, data) {
+  async patchDnsRecord(zoneId:string, recordId:string, originAddress:string): Promise<CloudflareResult> {
     return this.client.request({
       method: 'PATCH',
       url: `/client/v4/zones/${zoneId}/dns_records/${recordId}`,
-      data
+      data: {content: originAddress}
     });
   }
 }

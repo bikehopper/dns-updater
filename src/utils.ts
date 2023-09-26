@@ -2,7 +2,7 @@ import p from 'phin';
 import arrayShuffle from 'array-shuffle';
 
 // GET req to these domains just returns your IP
-const getIpRetrievingSites = () => {
+function getIpRetrievingSites(): string[] {
   return arrayShuffle([
     'https://icanhazip.com',
     'https://ifconfig.me',
@@ -13,17 +13,26 @@ const getIpRetrievingSites = () => {
   ]);
 };
 
-export async function getPublicIPAddress() {
+export async function getPublicIPAddress(): Promise<string|undefined> {
   const ipRetrievingSites = getIpRetrievingSites();
-  const errors = [];
+  const errors: Error[] = [];
+  let ip:string|undefined;
+
   for (let i = 0; i < ipRetrievingSites.length; i++) {
     try {
-      const { body: ip } = await p(ipRetrievingSites[i]);
-      return ip.toString().trim();
+      const { body: ipAddress } = await p(ipRetrievingSites[i]);
+      ip = ipAddress.toString().trim();
+      break;
     }
     catch(e) {
-      errors.push(e);
+      if (e instanceof Error) {
+        errors.push(e);
+      }
     }
+  }
+
+  if (ip) {
+    return ip;
   }
 
   if (errors.length) {

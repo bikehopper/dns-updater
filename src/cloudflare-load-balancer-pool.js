@@ -1,4 +1,4 @@
-import CloudflareClient from './cloudflareClient';
+import CloudflareClient from './cloudflareClient.js';
 
 export default class CloudFlareLoadBalancerPool {
   constructor(bearerToken) {

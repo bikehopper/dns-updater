@@ -1,4 +1,3 @@
-import { getPublicIPAddress } from './utils.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
 import {
   bearerToken,

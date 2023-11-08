@@ -103,7 +103,7 @@ describe('#updatePoolOrigin successful API call', () => {
     const result = await cloudFlareLoadBalancerPool.updatePoolOrigin(mockPoll, mockOriginName, mockOriginAddress);
     expect(clientSpy).toHaveBeenCalledWith({
       method: 'PUT',
-      url: `/client/v4/user/load_balancers/pools/${mockPoll.id}`,
+      url: `https://api.cloudflare.com/client/v4/user/load_balancers/pools/${mockPoll.id}`,
       data: {
         name: mockPoll.name,
         check_regions: ['WNAM'],

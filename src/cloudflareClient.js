@@ -20,9 +20,9 @@ export default class CloudflareClient {
   }
 
   async request(options) {
-    const { path, ...otherOptions } = options;
+    const { url, ...otherOptions } = options;
     const { body } = await this.#client({
-      url: new URL(path, 'https://api.cloudflare.com').toString(),
+      url: new URL(url, 'https://api.cloudflare.com').toString(),
       ...otherOptions,
     });
 

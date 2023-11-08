@@ -106,7 +106,12 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         "id": "17b5962d775c646f3f9725cbc7a53df4",
         "origins": [
           {
-            "address": "0.0.0.0"
+            "address": "0.0.0.0",
+            "name": `some-other-origin-name`
+          },
+          {
+            "address": "0.0.0.244",
+            "name": mockOriginName
           }
         ]
       }
@@ -122,6 +127,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
     beforeEach(() => {
       vi.stubGlobal('console', consoleMock);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
+      vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(true);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
     });
     afterEach(() => {
@@ -132,8 +138,9 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       client.listPools.mockResolvedValue(mockListPoolsResp);
       await updateLoadBalancerOrigins(mockIP);
 
-      expect(consoleMock.log).toHaveBeenCalledWith(`would update: pool: ${mockListPoolsResp[0].id}, ${mockOriginName}, ${mockIP}`);
-      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater.`);
+      expect(consoleMock.log).toHaveBeenCalledWith(`would update, pool: ${mockListPoolsResp[0].id}, ${mockOriginName}, ${mockIP}`);
+      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater for 1 pool(s).`);
+
     });
   });
 
@@ -145,7 +152,8 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         "id": "17b5962d775c646f3f9725cbc7a53df4",
         "origins": [
           {
-            "address": "0.0.0.0"
+            "address": "0.0.0.0",
+            "name": mockOriginName
           }
         ]
       }
@@ -188,7 +196,8 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         "id": "17b5962d775c646f3f9725cbc7a53df4",
         "origins": [
           {
-            "address": "0.0.0.0"
+            "address": "0.0.0.0",
+            "name": mockOriginName
           }
         ]
       }
@@ -218,7 +227,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       await updateLoadBalancerOrigins(mockIP);
 
       expect(client.updatePoolOrigin).toHaveBeenCalledWith(mockListPoolsResp[0], mockOriginName, mockIP)
-      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater.`);
+      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater for 1 pool(s).`);
     });
   });
 });

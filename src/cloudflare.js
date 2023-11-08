@@ -24,13 +24,16 @@ export async function updateLoadBalancerOrigins(publicIPAddress) {
 
   const pools = await cloudFlareLoadBalancerPool.listPools();
 
-  // remove pools that have an outdated IP
-  const outdatedPools = pools.filter(pool => pool.origins.some(origin => origin.address !== publicIPAddress));
+  // remove pools that have an current IP
+  const outdatedPools = pools
+    .filter(pool => pool.origins.some(origin => origin.address !== publicIPAddress))
+    .filter(pool => pool.origins.some(origin => origin.name === originName));
 
   const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
     if (dryRun) {
-      console.log(`would update: pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
+      console.log(`would update, pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
     } else {
+      console.log(`patching poolId: ${pool.id}:${originName} to ${publicIPAddress}`);
       return cloudFlareLoadBalancerPool.updatePoolOrigin(pool, originName, publicIPAddress);
     }
   }));
@@ -44,7 +47,7 @@ export async function updateLoadBalancerOrigins(publicIPAddress) {
     return;
   }
 
-  console.log(`Successful run of CloudFlare pool origin IP address updater.`);
+  console.log(`Successful run of CloudFlare pool origin IP address updater for ${updatedOriginPools.length} pool(s).`);
 }
 
 export async function updateDnsRecords(publicIPAddress) {
@@ -61,9 +64,9 @@ export async function updateDnsRecords(publicIPAddress) {
   }
 
   const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
+  const relevantDNSZoneRecrods = zoneDnsRecords.filter(record => domains.includes(record.name));
 
-  await Promise.all(zoneDnsRecords
-    .filter(record => domains.includes(record.name))
+  await Promise.all(relevantDNSZoneRecrods
     .map(record => {
       if (dryRun) {
         console.log(`would patch id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
@@ -76,5 +79,5 @@ export async function updateDnsRecords(publicIPAddress) {
     })
   );
 
-  console.log(`Successful run of CloudFlare DNS A record updater.`);
+  console.log(`Successful run of CloudFlare DNS A record updater for ${relevantDNSZoneRecrods.length} DNS record(s).`);
 }

@@ -4,14 +4,16 @@ import { URL } from 'node:url';
 export default class CloudflareClient {
   #bearerToken;
   #client;
-  #defaultOptions = {
-    parse: 'json',
-    core: {
-      headers: {
-        'Authorization': `Bearer ${this.#bearerToken}`,
-        'Content-Type': 'application/json'
+  get #defaultOptions() {
+    return {
+      parse: 'json',
+      core: {
+        headers: {
+          'Authorization': `Bearer ${this.#bearerToken}`,
+          'Content-Type': 'application/json'
+        }
       }
-    }
+    };
   };
 
   constructor(bearerToken) {

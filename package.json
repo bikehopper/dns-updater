@@ -16,8 +16,8 @@
   "license": "ISC",
   "dependencies": {
     "array-shuffle": "^3.0.0",
-    "node-cron": "^3.0.2",
-    "phin": "^3.7.0"
+    "phin": "^3.7.0",
+    "set-interval-async": "^3.0.3"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.22.15",

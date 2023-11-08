@@ -1,4 +1,4 @@
-import cron from 'node-cron';
+import { setIntervalAsync, clearIntervalAsync } from 'set-interval-async';
 import { updateLoadBalancerOrigins, updateDnsRecords } from './cloudflare.js';
 import {
   domains,
@@ -22,7 +22,7 @@ const cache = {
   lastIPAddress: null,
 };
 
-const task = cron.schedule('* * * * *', async () => {
+const interval = setIntervalAsync(async () => {
   const publicIPAddress = await getPublicIPAddress();
 
   if(cache.lastIPAddress === publicIPAddress) {
@@ -42,18 +42,18 @@ const task = cron.schedule('* * * * *', async () => {
   await Promise.all(pendingUpdates);
 
   cache.lastIPAddress = publicIPAddress;
-});
+}, 60000);
 
-const shutdown = (signal, value) => {
+const shutdown = async (signal, value) => {
   console.log("shutdown!");
-  task.stop();
+  await clearIntervalAsync(interval);
   process.exit(128 + value);
 };
 
 // Create a listener for each of the signals that we want to handle
 Object.keys(signals).forEach((signal) => {
-  process.on(signal, () => {
+  process.on(signal, async () => {
     console.log(`process received a ${signal} signal`);
-    shutdown(signal, signals[signal]);
+    await shutdown(signal, signals[signal]);
   });
 });

@@ -4,6 +4,7 @@ import {
   domains,
   originName,
 } from './config.js';
+import { getPublicIPAddress } from './utils.js'
 
 const shouldUpdateOrigins = originName && originName.length > 0;
 const shouldUpdateDns = domains && domains.length > 0;

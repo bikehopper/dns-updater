@@ -5,6 +5,7 @@ import {
   originName,
 } from './config.js';
 import { getPublicIPAddress } from './utils.js'
+import { info, warn } from './logger.js';
 
 const shouldUpdateOrigins = originName && originName.length > 0;
 const shouldUpdateDns = domains && domains.length > 0;
@@ -27,7 +28,7 @@ const interval = setIntervalAsync(async () => {
   const publicIPAddress = await getPublicIPAddress();
 
   if(cache.lastIPAddress === publicIPAddress) {
-    console.log('No change to IP address.');
+    info('No change to IP address.');
     return;
   }
   const pendingUpdates = []
@@ -46,7 +47,7 @@ const interval = setIntervalAsync(async () => {
 }, 60000);
 
 const shutdown = async (signal, value) => {
-  console.log("shutdown!");
+  warn("shutdown!");
   await clearIntervalAsync(interval);
   process.exit(128 + value);
 };
@@ -54,7 +55,7 @@ const shutdown = async (signal, value) => {
 // Create a listener for each of the signals that we want to handle
 Object.keys(signals).forEach((signal) => {
   process.on(signal, async () => {
-    console.log(`process received a ${signal} signal`);
+    warn(`process received a ${signal} signal`);
     await shutdown(signal, signals[signal]);
   });
 });

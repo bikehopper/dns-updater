@@ -1,8 +1,10 @@
 import { describe, beforeEach, afterEach, test, expect, vi, afterAll } from 'vitest';
 import { getPublicIPAddress } from './utils.js';
 import p from 'phin';
+import loglevel from 'loglevel';
 
 vi.mock('phin');
+vi.mock('loglevel');
 
 describe('successful getPublicIPAddress', () => {
 
@@ -44,15 +46,10 @@ describe('partial failure of getPublicIPAddress', () => {
 });
 
 describe('failure of getPublicIPAddress', () => {
-  const consoleMock = {
-    log: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    debug: vi.fn(),
-  };
+  const logLevelerrorMock = vi.fn();
   beforeEach(() => {
     p.mockRejectedValue(new Error('500 timeout'));
-    vi.stubGlobal('console', consoleMock);
+    loglevel.error.mockImplementation(logLevelerrorMock);
   });
 
   afterEach(() => {
@@ -65,6 +62,6 @@ describe('failure of getPublicIPAddress', () => {
 
   test('#getPublicIPAddress', async () => {
     await expect(getPublicIPAddress()).rejects.toEqual(new Error('Failed to get public IP address.'));
-    expect(consoleMock.error).toBeCalledTimes(6);
+    expect(logLevelerrorMock).toBeCalledTimes(6);
   });
 });

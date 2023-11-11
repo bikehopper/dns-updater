@@ -6,6 +6,7 @@ import {
   dryRun,
   originName,
 } from './config.js';
+import { debug, info, warn, error } from './logger.js';
 
 const cloudFlareLoadBalancerPool = new CloudFlareLoadBalancerPool(bearerToken);
 
@@ -19,7 +20,7 @@ export async function updateLoadBalancerOrigins(publicIPAddress) {
   }
 
   if (dryRun === true) {
-    console.debug('<-------- Dry run mode -------->');
+    debug('<-------- Dry run mode -------->');
   }
 
   const pools = await cloudFlareLoadBalancerPool.listPools();
@@ -31,9 +32,9 @@ export async function updateLoadBalancerOrigins(publicIPAddress) {
 
   const updatedOriginPools = await Promise.allSettled(outdatedPools.map(pool => {
     if (dryRun) {
-      console.log(`would update, pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
+      info(`would update, pool: ${pool.id}, ${originName}, ${publicIPAddress}`);
     } else {
-      console.log(`patching poolId: ${pool.id}:${originName} to ${publicIPAddress}`);
+      warn(`patching poolId: ${pool.id}:${originName} to ${publicIPAddress}`);
       return cloudFlareLoadBalancerPool.updatePoolOrigin(pool, originName, publicIPAddress);
     }
   }));
@@ -42,12 +43,12 @@ export async function updateLoadBalancerOrigins(publicIPAddress) {
 
   if (failedUpdates.length > 0) {
     failedUpdates.forEach(failure => {
-      console.error(`Failed to update CloudFlare origin pool: ${failure.reason}`);
+      error(`Failed to update CloudFlare origin pool: ${failure.reason}`);
     });
     return;
   }
 
-  console.log(`Successful run of CloudFlare pool origin IP address updater for ${updatedOriginPools.length} pool(s).`);
+  info(`Successful run of CloudFlare pool origin IP address updater for ${updatedOriginPools.length} pool(s).`);
 }
 
 export async function updateDnsRecords(publicIPAddress) {
@@ -56,11 +57,11 @@ export async function updateDnsRecords(publicIPAddress) {
   }
 
   if (domains.length === 0) {
-    console.warn(Error('Env var DOMAINS not set.'));
+    error(Error('Env var DOMAINS not set.'));
   }
 
   if (dryRun === true) {
-    console.debug('<-------- Dry run mode -------->');
+    debug('<-------- Dry run mode -------->');
   }
 
   const zoneDnsRecords = await cloudFlareLoadBalancerPool.getZoneDNSARecords(cloudFlareZoneId);
@@ -69,9 +70,9 @@ export async function updateDnsRecords(publicIPAddress) {
   await Promise.all(relevantDNSZoneRecrods
     .map(record => {
       if (dryRun) {
-        console.log(`would patch id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
+        info(`would patch id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
       } else {
-        console.log(`patching id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
+        warn(`patching id: ${record.id}, name: ${record.name}, ipaddreess: ${publicIPAddress}`);
         return cloudFlareLoadBalancerPool.patchDnsRecord(cloudFlareZoneId, record.id, {
           content: publicIPAddress
         });
@@ -79,5 +80,5 @@ export async function updateDnsRecords(publicIPAddress) {
     })
   );
 
-  console.log(`Successful run of CloudFlare DNS A record updater for ${relevantDNSZoneRecrods.length} DNS record(s).`);
+  info(`Successful run of CloudFlare DNS A record updater for ${relevantDNSZoneRecrods.length} DNS record(s).`);
 }

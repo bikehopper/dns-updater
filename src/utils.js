@@ -1,5 +1,6 @@
 import p from 'phin';
 import arrayShuffle from 'array-shuffle';
+import { error } from './logger.js';
 
 // GET req to these domains just returns your IP
 const getIpRetrievingSites = () => {
@@ -28,7 +29,7 @@ export async function getPublicIPAddress() {
 
   if (errors.length) {
     errors.forEach(e => {
-      console.error(e);
+      error(e);
     });
     throw new Error('Failed to get public IP address.');
   }

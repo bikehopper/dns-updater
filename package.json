@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "array-shuffle": "^3.0.0",
+    "loglevel": "^1.8.1",
     "phin": "^3.7.0",
     "set-interval-async": "^3.0.3"
   },

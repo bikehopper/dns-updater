@@ -2,7 +2,9 @@ import { describe, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import { updateLoadBalancerOrigins } from './cloudflare.js';
 import * as exports from './config.js';
 import CloudFlareLoadBalancerPool from './cloudflare-load-balancer-pool.js';
+import loglevel from 'loglevel';
 
+vi.mock('loglevel');
 vi.mock('./config.js');
 vi.mock('./utils.js');
 vi.mock('./cloudflare-load-balancer-pool.js');
@@ -74,14 +76,9 @@ describe('updateLoadBalancerOrigins env vars', () => {
 });
 
 describe('updateLoadBalancerOrigins dry run mode', () => {
-  const consoleMock = {
-    log: vi.fn(),
-    error: vi.fn(),
-    info: vi.fn(),
-    debug: vi.fn(),
-  };
+  const logLevelDebugMock = vi.fn();
   beforeEach(() => {
-    vi.stubGlobal('console', consoleMock);
+    loglevel.debug.mockImplementation(logLevelDebugMock);
   });
   afterEach(() => {
     vi.clearAllMocks();
@@ -93,7 +90,7 @@ describe('updateLoadBalancerOrigins dry run mode', () => {
       await updateLoadBalancerOrigins({});
     } catch {}
 
-    expect(consoleMock.debug).toHaveBeenNthCalledWith(1, '<-------- Dry run mode -------->');
+    expect(logLevelDebugMock).toHaveBeenNthCalledWith(1, '<-------- Dry run mode -------->');
   });
 });
 
@@ -116,16 +113,10 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         ]
       }
     ];
-    const consoleMock = {
-      log: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
-    };
     let client;
-
+    const logLevelInfoMock = vi.fn();
     beforeEach(() => {
-      vi.stubGlobal('console', consoleMock);
+      loglevel.info.mockImplementation(logLevelInfoMock);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(true);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
@@ -138,13 +129,14 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       client.listPools.mockResolvedValue(mockListPoolsResp);
       await updateLoadBalancerOrigins(mockIP);
 
-      expect(consoleMock.log).toHaveBeenCalledWith(`would update, pool: ${mockListPoolsResp[0].id}, ${mockOriginName}, ${mockIP}`);
-      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater for 1 pool(s).`);
+      expect(logLevelInfoMock).toHaveBeenCalledWith(`would update, pool: ${mockListPoolsResp[0].id}, ${mockOriginName}, ${mockIP}`);
 
     });
   });
 
   describe('failure wet run', () => {
+    const mockUpdatePoolError = new Error('7003:No route for the URI');
+    const logLevelErrorMock = vi.fn();
     const mockOriginName = 'mock-origin-name';
     const mockIP = '0.0.0.1';
     const mockListPoolsResp = [
@@ -158,17 +150,10 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         ]
       }
     ];
-    const consoleMock = {
-      log: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
-    };
-    const mockUpdatePoolError = new Error('7003:No route for the URI');
     let client;
 
     beforeEach(() => {
-      vi.stubGlobal('console', consoleMock);
+      loglevel.error.mockImplementation(logLevelErrorMock);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(false);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
@@ -184,7 +169,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       await updateLoadBalancerOrigins(mockIP);
 
       expect(client.updatePoolOrigin).toHaveBeenCalledWith(mockListPoolsResp[0], mockOriginName, mockIP)
-      expect(consoleMock.error).toHaveBeenCalledWith(`Failed to update CloudFlare origin pool: ${mockUpdatePoolError}`);
+      expect(logLevelErrorMock).toHaveBeenCalledWith(`Failed to update CloudFlare origin pool: ${mockUpdatePoolError}`);
     });
   });
 
@@ -202,16 +187,11 @@ describe('updateLoadBalancerOrigins IP changed', () => {
         ]
       }
     ];
-    const consoleMock = {
-      log: vi.fn(),
-      error: vi.fn(),
-      info: vi.fn(),
-      debug: vi.fn(),
-    };
     let client;
+    const logLevelInfoMock = vi.fn();
 
     beforeEach(() => {
-      vi.stubGlobal('console', consoleMock);
+      loglevel.info.mockImplementation(logLevelInfoMock);
       vi.spyOn(exports, 'originName', 'get').mockReturnValue(mockOriginName);
       vi.spyOn(exports, 'dryRun', 'get').mockReturnValue(false);
       client = new CloudFlareLoadBalancerPool('mockBearerToken');
@@ -227,7 +207,7 @@ describe('updateLoadBalancerOrigins IP changed', () => {
       await updateLoadBalancerOrigins(mockIP);
 
       expect(client.updatePoolOrigin).toHaveBeenCalledWith(mockListPoolsResp[0], mockOriginName, mockIP)
-      expect(consoleMock.log).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater for 1 pool(s).`);
+      expect(logLevelInfoMock).toHaveBeenCalledWith(`Successful run of CloudFlare pool origin IP address updater for 1 pool(s).`);
     });
   });
 });

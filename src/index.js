@@ -44,7 +44,7 @@ const interval = setIntervalAsync(async () => {
   await Promise.all(pendingUpdates);
 
   cache.lastIPAddress = publicIPAddress;
-}, 60000);
+}, 15000);
 
 const shutdown = async (signal, value) => {
   warn("shutdown!");

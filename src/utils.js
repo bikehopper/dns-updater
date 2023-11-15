@@ -1,6 +1,7 @@
 import p from 'phin';
 import arrayShuffle from 'array-shuffle';
 import { error } from './logger.js';
+import { isIPv4 } from 'net';
 
 // GET req to these domains just returns your IP
 const getIpRetrievingSites = () => {
@@ -11,6 +12,7 @@ const getIpRetrievingSites = () => {
     'https://ipinfo.io/ip',
     'https://ipecho.net/plain',
     'https://domains.google.com/checkip',
+    'https://ident.me',
   ]);
 };
 
@@ -20,7 +22,11 @@ export async function getPublicIPAddress() {
   for (let i = 0; i < ipRetrievingSites.length; i++) {
     try {
       const { body: ip } = await p(ipRetrievingSites[i]);
-      return ip.toString().trim();
+      const trimmedIP = ip.toString().trim();
+      if (isIPv4(trimmedIP)) {
+        return trimmedIP;
+      }
+      throw new Error(`recieved invalid IPv4 address: ${trimmedIP}`);
     }
     catch(e) {
       errors.push(e);

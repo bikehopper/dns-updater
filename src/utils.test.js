@@ -62,6 +62,46 @@ describe('failure of getPublicIPAddress', () => {
 
   test('#getPublicIPAddress', async () => {
     await expect(getPublicIPAddress()).rejects.toEqual(new Error('Failed to get public IP address.'));
-    expect(logLevelerrorMock).toBeCalledTimes(6);
+    expect(logLevelerrorMock).toBeCalledTimes(7); // number of IP retrieval sites
+  });
+});
+
+describe('only gets IPv6 address', () => {
+  const logLevelerrorMock = vi.fn();
+  beforeEach(() => {
+    p.mockResolvedValue({body: '684D:1111:222:3333:4444:5555:6:77'});
+    loglevel.error.mockImplementation(logLevelerrorMock);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
+  });
+
+  test('#getPublicIPAddress', async () => {
+    await expect(getPublicIPAddress()).rejects.toEqual(new Error('Failed to get public IP address.'));
+    expect(logLevelerrorMock).toBeCalledTimes(7); // number of IP retrieval sites
+  });
+});
+
+describe('Gets ipv6 once then valid ipv4', () => {
+  beforeEach(() => {
+    p.mockResolvedValueOnce({body: '684D:1111:222:3333:4444:5555:6:77'});
+    p.mockResolvedValue({body: '192.168.1.1'});
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.resetAllMocks();
+  });
+
+  test('#getPublicIPAddress', async () => {
+    expect(await getPublicIPAddress()).toEqual('192.168.1.1')
   });
 });
